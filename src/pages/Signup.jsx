@@ -1,11 +1,7 @@
-import React from 'react'
-import {Signup as SignupComponent} from '../components'
-function Signup() {
-  return (
-    <div>
-      <SignupComponent />
-    </div>
-  )
-}
+import SignupForm from "../components/Signup";
+import usePageTitle from "../hooks/usePageTitle";
 
-export default Signup
+export default function Signup() {
+  usePageTitle("Sign up");
+  return <SignupForm />;
+}

@@ -1,15 +1,19 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login as authLogin } from "../store/authSlice";
-import { Button, Input, Logo } from "./index";
 import { useDispatch } from "react-redux";
-import authService from "../appwrite/auth";
 import { useForm } from "react-hook-form";
-function Login() {
+import { login as authLogin } from "../store/authSlice";
+import authService from "../appwrite/auth";
+import Button from "./Button";
+import Input from "./Input";
+import Logo from "./Logo";
+
+export default function Login() {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { register, handleSubmit } = useForm();
-  const [error, setError] = useState();
+  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm();
+  const [error, setError] = useState("");
+
   const login = async (data) => {
     setError("");
     try {
@@ -19,65 +23,51 @@ function Login() {
         if (userData) dispatch(authLogin({ userData }));
         navigate("/");
       }
-    } catch (error) {
-      setError(error.message);
+    } catch (err) {
+      setError(err?.message || "Could not sign in.");
     }
   };
+
   return (
-    <div className="flex items-center justify-center w-full">
-      <div
-        className={`mx-auto w-full max-w-lg bg-gray-100 rounded-xl p-10 border border-black/10`}
-      >
-        <div className="flex justify-center mb-2">
-          <span className="inline-block w-full max-w-[100px]">
-            <Logo width="100%" />
-          </span>
-        </div>
-        <h2 className="text-2xl font-bold leading-tight text-center">
-          {" "}
-          Sign in to your Account
-        </h2>
-        <p className="mt-2 text-base text-center text-black/60">
-          Don&apos;t have any account?&nbsp;
-          <Link
-            to="/signup"
-            className="font-medium transition-all duration-200 text-primary hover:underline"
-          >
-            Sign Up
-          </Link>
-        </p>
-        {error && <p className="mt-8 text-center text-red-600">{error}</p>}
-        <form onSubmit={handleSubmit(login)} className="mt-8">
-          <div className="space-y-5">
-            <Input
-              label="Email:"
-              placeholder="Enter your Email"
-              type="email"
-              {...register("email", {
-                required: true,
-                validate: {
-                  matchPatern: (value) =>
-                    /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/.test(value) ||
-                    "Email address must be a valid Address",
-                },
-              })}
-            />
-            <Input
-              label="Password:"
-              type="password"
-              placeholder="Enter Your password"
-              {...register("password", {
-                required: true,
-              })}
-            />
-            <Button type="submit" className="w-full">
-              Sign In
-            </Button>
-          </div>
-        </form>
+    <div className="mx-auto w-full max-w-md py-10">
+      <div className="mb-6 flex justify-center">
+        <Logo />
       </div>
+      <h1 className="text-center font-serif text-4xl font-normal">Sign in</h1>
+      <p className="mt-3 text-center text-sm text-[#6b6560]">
+        No account?{" "}
+        <Link to="/signup" className="text-[#1c1917] underline underline-offset-4">
+          Sign up
+        </Link>
+      </p>
+      {error && <p className="mt-4 text-sm text-[#8a2b2b]">{error}</p>}
+      <form onSubmit={handleSubmit(login)} className="mt-6 space-y-4">
+        <Input
+          label="Email"
+          placeholder="you@email.com"
+          type="email"
+          autoComplete="email"
+          error={errors.email?.message}
+          {...register("email", {
+            required: "Email is required.",
+            pattern: {
+              value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+              message: "Enter a valid email address.",
+            },
+          })}
+        />
+        <Input
+          label="Password"
+          type="password"
+          placeholder="Password"
+          autoComplete="current-password"
+          error={errors.password?.message}
+          {...register("password", { required: "Password is required." })}
+        />
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Signing in..." : "Sign in"}
+        </Button>
+      </form>
     </div>
   );
 }
-
-export default Login;

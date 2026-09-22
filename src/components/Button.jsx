@@ -1,20 +1,18 @@
-import React, { Children } from "react";
-
 export default function Button({
-  Children,
+  children,
   type = "button",
-  bgColor = "bg-blue-600",
-  textColor = "text-white",
+  bgColor = "bg-[#1c1917]",
+  textColor = "text-[#f6f3ee]",
   className = "",
   ...props
 }) {
   return (
     <button
-      className={`px-4 py-2 rounded-lg ${bgColor} ${type}
-      ${textColor} ${className}`}
+      type={type}
+      className={`inline-flex h-11 items-center justify-center px-5 text-sm font-medium disabled:cursor-not-allowed disabled:opacity-60 ${bgColor} ${textColor} ${className}`}
       {...props}
     >
-      {Children}
+      {children}
     </button>
   );
 }

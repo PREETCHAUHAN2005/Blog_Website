@@ -1,15 +1,11 @@
-import React from 'react'
-import { Container, PostForm } from '../components'
+import { Container, PostForm } from "../components";
+import usePageTitle from "../hooks/usePageTitle";
 
-function AddPost() {
+export default function AddPost() {
+  usePageTitle("Create");
   return (
-    <div className='py-8'>
-        <Container>
-          <PostForm />
-        </Container>
-      
-    </div>
-  )
+    <Container>
+      <PostForm />
+    </Container>
+  );
 }
-
-export default AddPost

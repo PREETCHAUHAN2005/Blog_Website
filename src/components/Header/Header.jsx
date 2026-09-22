@@ -1,71 +1,50 @@
-import React from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
-import {Container,Logo,LogoutBtn} from '../index'
+import Logo from "../Logo";
+import LogoutBtn from "./LogoutBtn";
 
-function Header() {
-  const authStatus = useSelector((state) => state.auth.status);
-  const navigate = useNavigate();
-  const navItems = [
-    {
-      name: "Home",
-      slug: "/",
-      active: true,
-    },
-    {
-      name: "Login",
-      slug: "/login",
-      active: !authStatus,
-    },
-    {
-      name: "Signup",
-      slug: "/signup",
-      active: !authStatus,
-    },
-    {
-      name: "All Posts",
-      slug: "/all-posts",
-      active: authStatus,
-    },
-    {
-      name: "Add Post",
-      slug: "/add-post",
-      active: authStatus,
-    },
-  ];
+function Item({ to, children, end = false }) {
   return (
-    <header className="py-3 bg-gray-500 shadow">
-      <Container>
-        <nav className="flex">
-          <div className="mr-4">
-            <Link to="/">
-              <Logo width="70px" />
-            </Link>
-          </div>
-          <ul className="flex items-center gap-4 ml-auto">
-            {navItems.map((item) =>
-              item.active ? (
-                <li key={item.name}>
-                  <button
-                    onClick={() => navigate(item.slug)}
-                    className="inline-block px-6 py-2 duration-200 rounded-full hover:bg-blue-100"
-                  >
-                    {item.name}
-                  </button>
-                </li>
-              ) : null
-            )}
-            {authStatus && (
-              <li>
-                <LogoutBtn />
-              </li>
-            )}
-          </ul>
-        </nav>
-      </Container>
-    </header>
+    <NavLink
+      to={to}
+      end={end}
+      className={({ isActive }) =>
+        `text-sm text-[#1c1917] underline-offset-4 ${
+          isActive ? "underline" : "hover:underline"
+        }`
+      }
+    >
+      {children}
+    </NavLink>
   );
 }
 
-export default Header;
+export default function Header() {
+  const authStatus = useSelector((state) => state.auth.status);
+  const userData = useSelector((state) => state.auth.userData);
+
+  return (
+    <header className="border-b border-[#e4dfd8]">
+      <div className="mx-auto flex w-full max-w-3xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-baseline sm:justify-between">
+        <NavLink to="/" end aria-label="Aiblog home">
+          <Logo />
+        </NavLink>
+        <nav className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+          <Item to="/" end>
+            Home
+          </Item>
+          {authStatus && <Item to="/all-posts">Your posts</Item>}
+          {authStatus && <Item to="/add-post">Write</Item>}
+          {authStatus ? (
+            <>
+              <span className="text-sm text-[#6b6560]">{userData?.name || "Account"}</span>
+              <LogoutBtn className="text-sm text-[#1c1917] underline-offset-4 hover:underline" />
+            </>
+          ) : (
+            <Item to="/login">Sign in</Item>
+          )}
+        </nav>
+      </div>
+    </header>
+  );
+}

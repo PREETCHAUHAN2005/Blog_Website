@@ -1,31 +1,51 @@
-import React,{useEffect, useState} from 'react'
-import { Container , PostForm } from '../components'
-import appwriteService from "../appwrite/config"
-import { useNavigate, useParams } from 'react-router-dom'
+import { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { Container, PostForm } from "../components";
+import appwriteService from "../appwrite/config";
+import usePageTitle from "../hooks/usePageTitle";
 
-function EditPost() {
-    const [post , setPosts] = useState(null)
-    const {slug} = useParams()
-    const navigate =  useNavigate()
-    useEffect(() => {
-        if(slug){
-            appwriteService.getPost(slug).then((post) => {
-                if(post){
-                    setPosts(post)
-                }
-            })
-        } else {
-            navigate('/')
+export default function EditPost() {
+  const [post, setPost] = useState(null);
+  const [error, setError] = useState("");
+  const { slug } = useParams();
+  const navigate = useNavigate();
+  const userData = useSelector((state) => state.auth.userData);
+  usePageTitle(post?.title ? `Edit ${post.title}` : "Edit post");
+
+  useEffect(() => {
+    if (!slug) {
+      navigate("/");
+      return undefined;
+    }
+    let active = true;
+    appwriteService
+      .getPost(slug)
+      .then((result) => {
+        if (!active) return;
+        if (result?.userId && result.userId !== userData?.$id) {
+          setError("You can only edit your own posts.");
+          return;
         }
-    },[slug , navigate])
-  return post? (
-    <div className='py-8'>
-        <Container>
-            <PostForm post={post} />
-        </Container>
-      
-    </div>
-  ):null
-}
+        setPost(result);
+      })
+      .catch((err) => {
+        if (active) setError(err?.message || "Could not open this post.");
+      });
+    return () => {
+      active = false;
+    };
+  }, [slug, navigate, userData]);
 
-export default EditPost
+  if (error) {
+    return <p className="py-10 text-center text-sm text-[#c00]">{error}</p>;
+  }
+
+  return post ? (
+    <Container>
+      <PostForm post={post} />
+    </Container>
+  ) : (
+    <p className="py-10 text-center text-sm text-[#606060]">Loading post...</p>
+  );
+}
